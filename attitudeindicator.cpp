@@ -40,25 +40,22 @@ int constrainInRange(int val, int min, int max)
 }
 
 AttitudeIndicator::AttitudeIndicator(QWidget *parent)
-    : QWidget(parent), fov(40), cache_valid(false), yaw(0)
+    : QWidget(parent), fov(40), cache_valid(false), yaw(0), ss(true)
 {
     msize = sizeMin;
     setMinimumSize(sizeMin,sizeMin);
     setMaximumSize(sizeMax,sizeMax);
     resize(msize, msize);
+
     connect(this, SIGNAL(pitchChanged(qreal)),      SLOT(invalidateCache()));
     connect(this, SIGNAL(rollChanged(qreal)),       SLOT(invalidateCache()));
     connect(this, SIGNAL(yawChanged(qreal)),        SLOT(invalidateCache()));
+    connect(this, SIGNAL(superSampleChanged(bool)), SLOT(invalidateCache()));
 
     initTargetChar();
     initRollChar();
     roll = 0.0;
     pitch = 0.0;
-}
-
-AttitudeIndicator::~AttitudeIndicator()
-{
-
 }
 
 void AttitudeIndicator::invalidateCache()
@@ -125,7 +122,8 @@ void AttitudeIndicator::repaintCache()
 
     msize = qMin(width(),height());
     pensize = msize;
-    cache = QPixmap(size());
+    msize *= ssfactor();
+    cache = QPixmap(size()*ssfactor());
     cache.fill(Qt::transparent);
     QPainter painter(&cache);
     QPen whitePen(Qt::white);
@@ -141,7 +139,7 @@ void AttitudeIndicator::repaintCache()
     painter.scale(msize, msize);
 
     QFont ar("Arial");
-    ar.setPointSizeF(qMax(8.0, qMin(32.0, 32*pensize/1000)));
+    ar.setPointSizeF(qMax(8.0, qMin(32.0, 32*pensize/1000))*ssfactor());
     painter.setFont(ar);
 
     renderHorizonBackground(&painter);
@@ -156,7 +154,7 @@ void AttitudeIndicator::setupPainterForTextOverlay(QPainter *painter)
     painter->scale(1/msize, 1/msize);
     painter->translate(painter->device()->width()  / -2.0,
                        painter->device()->height() / -2.0);
-    painter->setPen(QPen(Qt::white, 2));
+    painter->setPen(QPen(Qt::white, 2*ssfactor()));
     painter->setCompositionMode(QPainter::CompositionMode_SourceAtop);
 }
 
@@ -188,7 +186,7 @@ void AttitudeIndicator::renderHorizonBackground(QPainter *painter)
 void AttitudeIndicator::renderPitchIndicators(QPainter *painter)
 {
     QTransform mapper(painter->transform());
-
+    const int margin = 5*ssfactor();
     painter->save();
     painter->rotate(roll);
     setupPainterForTextOverlay(painter);
@@ -207,10 +205,10 @@ void AttitudeIndicator::renderPitchIndicators(QPainter *painter)
             const QString str(QString::number(qAbs(i)));
             QRectF br = painter->boundingRect(QRectF(), Qt::AlignCenter, str);
             br.moveCenter(QPointF(0, renderline.y1()));
-            br.moveRight(renderline.x1()-5);
+            br.moveRight(renderline.x1()-margin);
             painter->drawText(br, str);
             br.moveCenter(QPointF(0, renderline.y2()));
-            br.moveLeft(renderline.x2()+5);
+            br.moveLeft(renderline.x2()+margin);
             painter->drawText(br, str);
         }
     }
@@ -219,6 +217,7 @@ void AttitudeIndicator::renderPitchIndicators(QPainter *painter)
 
 void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
 {
+    const int scale2 = 2*ssfactor();
     QTransform mapper(painter->transform());
     const qreal cpitch = qBound(-fov, pitch, fov);
     const qreal y = 0.5*cpitch/fov;
@@ -227,7 +226,7 @@ void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
     painter->rotate(roll);
     setupPainterForTextOverlay(painter);
 
-    painter->setPen(QPen(Qt::green, 2));
+    painter->setPen(QPen(Qt::green, scale2));
     int horizonleft = static_cast<int>((yaw-fov*0.5)/5.0)*5;
     int horizonright = static_cast<int>((yaw+fov*0.5)/5.0+1.0)*5;
     for(int i = horizonleft; i <= horizonright; i += 5)
@@ -241,7 +240,7 @@ void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
             const QString str(QString::number(constrainInRange(i, 0, 360)));
             QRectF br = painter->boundingRect(QRectF(), Qt::AlignCenter, str);
             br.moveCenter(renderline.p2());
-            br.moveBottom(renderline.y2()-2);
+            br.moveBottom(renderline.y2()-scale2);
             painter->drawText(br, str);
         }
     }
