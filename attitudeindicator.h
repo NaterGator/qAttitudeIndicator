@@ -37,21 +37,16 @@ protected:
     void keyPressEvent(QKeyEvent *event);
 
 private:
-    void getRollLine(EN_TYPES_ATTITUDE type,QPoint* pFrom,QPoint* pTo);
-    void getPitchLine(EN_TYPES_ATTITUDE type,quint32 index,QPoint* pFrom,QPoint* pTo);
     void initTargetChar();
-    void resizeTargetChar();
     void initRollChar();
-    void resizeRollChar();
 
-    int size;
-    QPoint rollPoint[numbRollLine][2];
-    qreal  rollRotate[numbRollLine];
-    QPoint pitchPoint[numbPitchLine][2];
+    qreal size;
+    qreal pensize;
     qreal roll;
     qreal pitch;
-    QVector<QLine> target;
-    QVector<QLine> rollPointer;
+    qreal fov;
+    QPainterPath target;
+    QPainterPath rollPointer;
 };
 
 #endif // ATTITUDEINDICATOR_H
