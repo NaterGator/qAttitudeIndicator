@@ -40,7 +40,7 @@ int constrainInRange(int val, int min, int max)
 }
 
 AttitudeIndicator::AttitudeIndicator(QWidget *parent)
-    : QWidget(parent), fov(40), cache_valid(false)
+    : QWidget(parent), fov(40), cache_valid(false), yaw(0)
 {
     msize = sizeMin;
     setMinimumSize(sizeMin,sizeMin);
@@ -269,32 +269,4 @@ void AttitudeIndicator::renderOverlay(QPainter *painter)
         painter->rotate(mark.first);
     }
     painter->restore();
-}
-
-void AttitudeIndicator::keyPressEvent(QKeyEvent *event)
-{
-    switch (event->key())
-    {
-    case Qt::Key_Left:
-        if (event->modifiers().testFlag(Qt::ShiftModifier))
-            yaw -= 1.;
-        else if(roll>-90.)
-            roll -= 1.0;
-        break;
-    case Qt::Key_Right:
-        if (event->modifiers().testFlag(Qt::ShiftModifier))
-            yaw += 1.;
-        else if(roll<90.)
-            roll += 1.0;
-        break;
-    case Qt::Key_Down:
-        if(pitch>-20.)
-            pitch -=1.0;
-        break;
-    case Qt::Key_Up:
-        if(pitch<20.)
-            pitch +=1.0;
-        break;
-    }
-    invalidateCache();
 }
