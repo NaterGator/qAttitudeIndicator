@@ -40,6 +40,9 @@ private:
     void initTargetChar();
     void initRollChar();
 
+    // Rendering steps:
+    void renderHorizonBackground(QPainter *painter);
+    void renderOverlay(QPainter *painter);
     qreal size;
     qreal pensize;
     qreal roll;

@@ -86,8 +86,7 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
     QPoint center(0,0);
     QPen whitePen(Qt::white);
     QPen blackPen(Qt::black);
-    QBrush bgSky(QColor(48,172,220));
-    QBrush bgGround(QColor(247,168,21));
+
 
     whitePen.setWidthF(2/pensize);
     blackPen.setWidthF(1/pensize);
@@ -97,35 +96,56 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
                       painter.device()->height() / 2.);
     painter.scale(size, size);
 
-    painter.setPen(blackPen);
-    painter.rotate(roll);
-    painter.setBrush(bgSky);
+    renderHorizonBackground(&painter);
+    renderOverlay(&painter);
+
+}
+
+void AttitudeIndicator::renderHorizonBackground(QPainter *painter)
+{
+    QBrush bgSky(QColor(48,172,220));
+    QBrush bgGround(QColor(247,168,21));
 
     const qreal cpitch = qBound(-fov, pitch, fov);  // Just ground/sky beyond these limits
     const qreal y = 0.5*cpitch/fov;
     const qreal x = sqrt(1./4. - y*y);
     const qreal gr = atan(y/x) * 180./M_PI;
 
-    painter.drawChord(QRectF(-0.5,-0.5,1,1),gr*16., (180.-2.*gr)*16.);
-    painter.setBrush(bgGround);
-    painter.drawChord(QRectF(-0.5,-0.5,1,1),gr*16.,-(180.+2.*gr)*16.);
+    painter->save();
+    painter->rotate(roll);
 
-    painter.setPen(whitePen);
+    painter->setBrush(bgSky);
+    painter->drawChord(QRectF(-0.5,-0.5,1,1),gr*16., (180.-2.*gr)*16.);
+    painter->setBrush(bgGround);
+    painter->drawChord(QRectF(-0.5,-0.5,1,1),gr*16.,-(180.+2.*gr)*16.);
+
+    painter->setPen(QPen(Qt::white, 2/pensize));
     const QLineF horizon(-x,-y,x,-y);
     if (!horizon.isNull())
-        painter.drawLine(horizon);
+        painter->drawLine(horizon);
+    painter->restore();
+}
 
-    painter.setPen(blackPen);
-    painter.rotate(-180.);
-
-    whitePen.setWidthF(1/pensize);
-    painter.setPen(whitePen);
-    painter.setBrush(Qt::NoBrush);
-    painter.rotate(-roll);
-    blackPen.setWidthF(3/pensize);
-    painter.setPen(blackPen);
-    painter.drawPath(target);
-    painter.drawPath(rollPointer);
+void AttitudeIndicator::renderOverlay(QPainter *painter)
+{
+    painter->save();
+    painter->rotate(180);
+    painter->setPen(QPen(Qt::black, 2/pensize));
+    painter->setBrush(Qt::darkGreen);
+    painter->drawPath(rollPointer);
+    painter->setBrush(Qt::NoBrush);
+    painter->setPen(QPen(Qt::black, 4/pensize));
+    painter->drawPath(target);
+    painter->rotate(roll);
+    painter->setPen(QPen(Qt::black, 2/pensize));
+    painter->drawEllipse(QPointF(0,0), 0.5, 0.5);
+    QPointF base(0, 1/2.0);
+    foreach(const LineMark &mark, rollMarks) {
+        painter->rotate(-mark.first);
+        painter->drawLine(base, QPointF(0, base.y() - 1.0/(mark.second == Strong ? 20 : 40)));
+        painter->rotate(mark.first);
+    }
+    painter->restore();
 }
 
 void AttitudeIndicator::keyPressEvent(QKeyEvent *event)
