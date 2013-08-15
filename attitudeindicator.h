@@ -1,5 +1,5 @@
-#ifndef QATTITUDEINDICATOR_H
-#define QATTITUDEINDICATOR_H
+#ifndef ATTITUDEINDICATOR_H
+#define ATTITUDEINDICATOR_H
 
 #include <QWidget>
 
@@ -20,13 +20,13 @@ typedef enum _en_types_attitude_
     normalPitchLine
 } EN_TYPES_ATTITUDE;
 
-class qAttitudeIndicator : public QWidget
+class AttitudeIndicator : public QWidget
 {
     Q_OBJECT
 
 public:
-    qAttitudeIndicator(QWidget *parent = 0);
-    ~qAttitudeIndicator();
+    AttitudeIndicator(QWidget *parent = 0);
+    ~AttitudeIndicator();
     void setRoll(qreal val) {roll  = val;}
     void setPitch(qreal val){pitch = val;}
     qreal getRoll() {return roll;}
@@ -54,4 +54,4 @@ private:
     QVector<QLine> rollPointer;
 };
 
-#endif // QATTITUDEINDICATOR_H
+#endif // ATTITUDEINDICATOR_H

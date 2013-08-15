@@ -1,11 +1,11 @@
 #include <QtGui/QApplication>
-#include "qattitudeindicator.h"
+#include "attitudeindicator.h"
 
 //#include "mainwindow.h"
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    qAttitudeIndicator attInd;
+    AttitudeIndicator attInd;
 //    MainWindow w;
 //    w.show();
     attInd.show();

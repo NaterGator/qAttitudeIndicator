@@ -1,6 +1,6 @@
 #include <QtGui>
 #include <QDebug>
-#include "qattitudeindicator.h"
+#include "attitudeindicator.h"
 
 qreal defaultsRollRotate[numbRollLine]= {270.0,30.0,15.0,15.0,10.0,10.0,10.0,10.0,10.0,10.0,15.0,15.0,30.0};
 EN_TYPES_ATTITUDE defaultsTypeRoll[numbRollLine] = { normalRollLine,normalRollLine ,smallRollLine ,normalRollLine,
@@ -12,7 +12,7 @@ EN_TYPES_ATTITUDE defaultsTypePitch[numbPitchLine] = { normalPitchLine,smallPitc
                                                        smallPitchLine ,normalPitchLine,smallPitchLine, normalPitchLine};
 
 
-qAttitudeIndicator::qAttitudeIndicator(QWidget *parent)
+AttitudeIndicator::AttitudeIndicator(QWidget *parent)
     : QWidget(parent)
 {
     QTimer *timer = new QTimer(this);
@@ -39,12 +39,12 @@ qAttitudeIndicator::qAttitudeIndicator(QWidget *parent)
 
 }
 
-qAttitudeIndicator::~qAttitudeIndicator()
+AttitudeIndicator::~AttitudeIndicator()
 {
 
 }
 
-void qAttitudeIndicator::initTargetChar()
+void AttitudeIndicator::initTargetChar()
 {
     QLine line;
     line.setLine(-size/4,0,-size/16,0);
@@ -57,13 +57,13 @@ void qAttitudeIndicator::initTargetChar()
     target.append(line);
 }
 
-void qAttitudeIndicator::resizeTargetChar()
+void AttitudeIndicator::resizeTargetChar()
 {
     target.clear();
     initTargetChar();
 }
 
-void qAttitudeIndicator::initRollChar()
+void AttitudeIndicator::initRollChar()
 {
     QLine line;
     line.setLine(-size/32,14*size/32,0,15*size/32);
@@ -74,13 +74,13 @@ void qAttitudeIndicator::initRollChar()
     target.append(line);
 }
 
-void qAttitudeIndicator::resizeRollChar()
+void AttitudeIndicator::resizeRollChar()
 {
     rollPointer.clear();
     initRollChar();
 }
 
-void qAttitudeIndicator::getRollLine(EN_TYPES_ATTITUDE type,QPoint* pFrom,QPoint* pTo)
+void AttitudeIndicator::getRollLine(EN_TYPES_ATTITUDE type,QPoint* pFrom,QPoint* pTo)
 {
     quint8 ofs = (type == smallRollLine)? (size/40) : (size/20) ;
     pFrom->setY(size/2-ofs);
@@ -89,7 +89,7 @@ void qAttitudeIndicator::getRollLine(EN_TYPES_ATTITUDE type,QPoint* pFrom,QPoint
     pTo->setX(0);
 }
 
-void qAttitudeIndicator::getPitchLine(EN_TYPES_ATTITUDE type, quint32 index, QPoint* pFrom,QPoint* pTo)
+void AttitudeIndicator::getPitchLine(EN_TYPES_ATTITUDE type, quint32 index, QPoint* pFrom,QPoint* pTo)
 {
     int x,y;
     if(index>=4) index++;
@@ -101,7 +101,7 @@ void qAttitudeIndicator::getPitchLine(EN_TYPES_ATTITUDE type, quint32 index, QPo
     pTo->setY(y);
 }
 
-void qAttitudeIndicator::resizeEvent(QResizeEvent *event)
+void AttitudeIndicator::resizeEvent(QResizeEvent *event)
 {
     size = qMin(width(),height());
     for(int i=0;i < numbRollLine;i++)
@@ -112,7 +112,7 @@ void qAttitudeIndicator::resizeEvent(QResizeEvent *event)
     resizeRollChar();
 }
 
-void qAttitudeIndicator::paintEvent(QPaintEvent *)
+void AttitudeIndicator::paintEvent(QPaintEvent *)
 {
     QPainter painter(this);
     QPoint center(0,0);
@@ -132,7 +132,7 @@ void qAttitudeIndicator::paintEvent(QPaintEvent *)
 
     int y = 0.25*size*pitch/20.;
 
-    int x = sqrt(size*size/4 - y*y);
+    int x = sqrt(size*size/4. - y*y);
     qreal gr = atan((double)(y)/x);
     gr = gr * 180./3.1415926;
     painter.drawChord(-side/2,-side/2,side,side,gr*16,(180-2*gr)*16);
@@ -162,7 +162,7 @@ void qAttitudeIndicator::paintEvent(QPaintEvent *)
     painter.drawLines(rollPointer);
 }
 
-void qAttitudeIndicator::keyPressEvent(QKeyEvent *event)
+void AttitudeIndicator::keyPressEvent(QKeyEvent *event)
  {
      switch (event->key())
      {

@@ -12,9 +12,9 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    qattitudeindicator.cpp
+        attitudeindicator.cpp
 
 HEADERS  += mainwindow.h \
-    qattitudeindicator.h
+            attitudeindicator.h
 
 FORMS    += mainwindow.ui
