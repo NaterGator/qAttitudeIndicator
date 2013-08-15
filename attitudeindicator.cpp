@@ -115,6 +115,10 @@ void AttitudeIndicator::repaintCache()
                       painter.device()->height() / 2.);
     painter.scale(msize, msize);
 
+    QFont ar("Arial");
+    ar.setPointSizeF(qMax(8.0, qMin(32.0, 32*pensize/1000)));
+    painter.setFont(ar);
+
     renderHorizonBackground(&painter);
     renderPitchIndicators(&painter);
     renderHeadingIndicators(&painter);
