@@ -35,9 +35,9 @@ public:
     qreal getYaw()   const {return yaw;}
 
 public slots:
-    void setRoll(qreal val) {roll  = val;}
-    void setPitch(qreal val){pitch = val;}
-    void setYaw(qreal val)  {yaw   = val;}
+    void setRoll(qreal val);
+    void setPitch(qreal val);
+    void setYaw(qreal val);
     void invalidateCache();
 
 signals:
@@ -46,8 +46,8 @@ signals:
     void yawChanged(qreal);
 
 protected:
-    void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
+    void paintEvent(QPaintEvent *event);
     void keyPressEvent(QKeyEvent *event);
 
 private:

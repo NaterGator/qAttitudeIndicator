@@ -24,6 +24,13 @@ const QList<LineMark> rollMarks =
                         << LineMark(60,  Strong)
                         << LineMark(90,  Strong);
 
+qreal constrainInRange(qreal val, qreal min, qreal max)
+{
+    if (qFuzzyCompare(val, min) || qFuzzyCompare(val, max))
+        return val;
+    qreal constrained = fmod(val-min, max-min);
+    return constrained > 0 ? constrained + min : constrained + max;
+}
 int constrainInRange(int val, int min, int max)
 {
     if (val == min || val == max)
@@ -77,6 +84,24 @@ void AttitudeIndicator::initRollChar()
     rollPointer.lineTo(0,15/32.0);
     rollPointer.lineTo(1/32.0,14/32.0);
     rollPointer.lineTo(-1/32.0,14/32.0);
+}
+
+void AttitudeIndicator::setRoll(qreal val)
+{
+    roll = constrainInRange(val, -180., 180.);
+    emit rollChanged(roll);
+}
+
+void AttitudeIndicator::setPitch(qreal val)
+{
+    pitch = qBound(-90., val, 90.);
+    emit pitchChanged(pitch);
+}
+
+void AttitudeIndicator::setYaw(qreal val)
+{
+    yaw = constrainInRange(val, 0., 360.);
+    emit yawChanged(yaw);
 }
 
 void AttitudeIndicator::resizeEvent(QResizeEvent *event)
@@ -247,27 +272,29 @@ void AttitudeIndicator::renderOverlay(QPainter *painter)
 }
 
 void AttitudeIndicator::keyPressEvent(QKeyEvent *event)
- {
-     switch (event->key())
-     {
-     case Qt::Key_Left:
-         if(roll>-90.)
-         roll -= 1.0;
-         break;
-     case Qt::Key_Right:
-         if(roll<90.)
-         roll += 1.0;
-         break;
-     case Qt::Key_Down:
-         if(pitch>-20.)
-         pitch -=1.0;
-         break;
-     case Qt::Key_Up:
-         if(pitch<20.)
-         pitch +=1.0;
-         break;
-     default: break;
-//         QFrame::keyPressEvent(event);
-     }
+{
+    switch (event->key())
+    {
+    case Qt::Key_Left:
+        if (event->modifiers().testFlag(Qt::ShiftModifier))
+            yaw -= 1.;
+        else if(roll>-90.)
+            roll -= 1.0;
+        break;
+    case Qt::Key_Right:
+        if (event->modifiers().testFlag(Qt::ShiftModifier))
+            yaw += 1.;
+        else if(roll<90.)
+            roll += 1.0;
+        break;
+    case Qt::Key_Down:
+        if(pitch>-20.)
+            pitch -=1.0;
+        break;
+    case Qt::Key_Up:
+        if(pitch<20.)
+            pitch +=1.0;
+        break;
+    }
     invalidateCache();
- }
+}
