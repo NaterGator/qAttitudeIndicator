@@ -26,28 +26,27 @@ const QList<LineMark> rollMarks =
 
 int constrainInRange(int val, int min, int max)
 {
-	if (val == min || val == max)
-		return val;
-	int constrained = (val-min)%(max-min);
-	return constrained > 0 ? constrained + min : constrained + max;
+    if (val == min || val == max)
+        return val;
+    int constrained = (val-min)%(max-min);
+    return constrained > 0 ? constrained + min : constrained + max;
 }
 
 AttitudeIndicator::AttitudeIndicator(QWidget *parent)
     : QWidget(parent), fov(40), cache_valid(false)
 {
-    QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(invalidateCache()));
-    timer->start(1000);
     msize = sizeMin;
     setMinimumSize(sizeMin,sizeMin);
     setMaximumSize(sizeMax,sizeMax);
     resize(msize, msize);
+    connect(this, SIGNAL(pitchChanged(qreal)),      SLOT(invalidateCache()));
+    connect(this, SIGNAL(rollChanged(qreal)),       SLOT(invalidateCache()));
+    connect(this, SIGNAL(yawChanged(qreal)),        SLOT(invalidateCache()));
 
     initTargetChar();
     initRollChar();
     roll = 0.0;
     pitch = 0.0;
-
 }
 
 AttitudeIndicator::~AttitudeIndicator()
@@ -266,5 +265,5 @@ void AttitudeIndicator::keyPressEvent(QKeyEvent *event)
      default: break;
 //         QFrame::keyPressEvent(event);
      }
-     update();
+    invalidateCache();
  }
