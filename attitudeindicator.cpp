@@ -145,6 +145,7 @@ void AttitudeIndicator::repaintCache()
     QFont ar("Arial");
     ar.setPointSizeF(qMax(8.0, qMin(32.0, 32*pensize/1000))*ssfactor());
     painter.setFont(ar);
+    painter.setPen(Qt::NoPen);
 
     renderHorizonBackground(&painter);
     renderPitchIndicators(&painter);
@@ -179,7 +180,6 @@ void AttitudeIndicator::renderHorizonBackground(QPainter *painter)
     painter->drawChord(QRectF(-0.5,-0.5,1,1),gr*16., (180.-2.*gr)*16.);
     painter->setBrush(bgGround);
     painter->drawChord(QRectF(-0.5,-0.5,1,1),gr*16.,-(180.+2.*gr)*16.);
-
     painter->setPen(QPen(Qt::white, 2/pensize));
     const QLineF horizon(-x,-y,x,-y);
     if (!horizon.isNull())
