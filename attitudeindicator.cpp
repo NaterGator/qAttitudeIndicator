@@ -124,7 +124,7 @@ void AttitudeIndicator::repaintCache()
     if (cache_valid)
         return;
 
-    msize = qMin(width(),height());
+    msize = qMin(width(),height()) - 3;
     pensize = msize;
     msize *= ssfactor();
     cache = QPixmap(size()*ssfactor());
