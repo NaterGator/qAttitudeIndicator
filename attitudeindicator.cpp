@@ -2,6 +2,10 @@
 #include <QDebug>
 #include "attitudeindicator.h"
 
+
+const int sizeMax = 600,
+          sizeMin = 200;
+
 enum LineType {
     Strong,
     Weak

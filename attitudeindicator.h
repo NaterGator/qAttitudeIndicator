@@ -3,23 +3,6 @@
 
 #include <QWidget>
 
-
-typedef enum _en_global_definitions_
-{
-    sizeMax = 600,
-    sizeMin = 200,
-    numbRollLine = 13,
-    numbPitchLine =8
-} EN_GLOABL_DEFINITIONS;
-
-typedef enum _en_types_attitude_
-{
-    smallRollLine = 0,
-    normalRollLine,
-    smallPitchLine,
-    normalPitchLine
-} EN_TYPES_ATTITUDE;
-
 class AttitudeIndicator : public QWidget
 {
     Q_OBJECT
