@@ -18,3 +18,5 @@ HEADERS  += mainwindow.h \
             attitudeindicator.h
 
 FORMS    += mainwindow.ui
+
+OTHER_FILES += README.md

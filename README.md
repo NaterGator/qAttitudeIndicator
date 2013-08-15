@@ -1,7 +1,10 @@
-qAttitudeIndicator
+AttitudeIndicator
 ==================
 
 Qt ui widget implement attitude indicator
+
+Demo notes:
+ - Hold the shift key and press the left/right arrows to manipulate heading
 
 ==================
 
