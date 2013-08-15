@@ -40,8 +40,12 @@ private:
     void initTargetChar();
     void initRollChar();
 
+    // Painter helper
+    void setupPainterForTextOverlay(QPainter *painter);
+
     // Rendering steps:
     void renderHorizonBackground(QPainter *painter);
+    void renderPitchIndicators(QPainter *painter);
     void renderOverlay(QPainter *painter);
     qreal size;
     qreal pensize;

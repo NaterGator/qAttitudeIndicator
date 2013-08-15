@@ -3,8 +3,8 @@
 #include "attitudeindicator.h"
 
 enum LineType {
-	Strong,
-	Weak
+    Strong,
+    Weak
 };
 
 typedef QPair<qreal, LineType> LineMark;
@@ -97,8 +97,18 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
     painter.scale(size, size);
 
     renderHorizonBackground(&painter);
+    renderPitchIndicators(&painter);
     renderOverlay(&painter);
 
+}
+
+void AttitudeIndicator::setupPainterForTextOverlay(QPainter *painter)
+{
+    painter->scale(1/size, 1/size);
+    painter->translate(painter->device()->width()  / -2.0,
+                       painter->device()->height() / -2.0);
+    painter->setPen(QPen(Qt::white, 2));
+    painter->setCompositionMode(QPainter::CompositionMode_SourceAtop);
 }
 
 void AttitudeIndicator::renderHorizonBackground(QPainter *painter)
@@ -123,6 +133,38 @@ void AttitudeIndicator::renderHorizonBackground(QPainter *painter)
     const QLineF horizon(-x,-y,x,-y);
     if (!horizon.isNull())
         painter->drawLine(horizon);
+    painter->restore();
+}
+
+void AttitudeIndicator::renderPitchIndicators(QPainter *painter)
+{
+    QTransform mapper(painter->transform());
+
+    painter->save();
+    painter->rotate(roll);
+    setupPainterForTextOverlay(painter);
+
+    int pitchtop = qMin(90, static_cast<int>((pitch+fov)/5.0+1)*5);
+    int pitchbottom = qMax(-90, static_cast<int>((pitch-fov)/5.0-1)*5);
+    for (int i = pitchbottom; i <= pitchtop; i += 5) {
+        if (i == 0) continue;
+        bool strong = (i % 10) == 0;
+        if (!strong && pensize < 256) continue;
+        const qreal y = 0.5*(i-pitch)/fov;
+        const qreal x =  strong ? (5/32.0) : (3/32.0);
+        const QLineF renderline = mapper.map(QLineF(QPointF(-x, y), QPointF(x, y)));
+        painter->drawLine(renderline);
+        if (strong) {
+            const QString str(QString::number(qAbs(i)));
+            QRectF br = painter->boundingRect(QRectF(), Qt::AlignCenter, str);
+            br.moveCenter(QPointF(0, renderline.y1()));
+            br.moveRight(renderline.x1()-5);
+            painter->drawText(br, str);
+            br.moveCenter(QPointF(0, renderline.y2()));
+            br.moveLeft(renderline.x2()+5);
+            painter->drawText(br, str);
+        }
+    }
     painter->restore();
 }
 
