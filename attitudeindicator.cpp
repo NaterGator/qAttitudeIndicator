@@ -217,6 +217,7 @@ void AttitudeIndicator::renderPitchIndicators(QPainter *painter)
 
 void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
 {
+    const int dir = (pitch > 0) ? -1 : 1;
     const int scale2 = 2*ssfactor();
     QTransform mapper(painter->transform());
     const qreal cpitch = qBound(-fov, pitch, fov);
@@ -232,7 +233,7 @@ void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
     for(int i = horizonleft; i <= horizonright; i += 5)
     {
         bool strong = (i % 10) == 0;
-        const qreal yoffs = strong ? 1/32.0 : 1/64.0;
+        const qreal yoffs = (strong ? 1/32.0 : 1/64.0)*dir;
         const qreal x = (i-yaw)/fov;
         const QLineF renderline = mapper.map(QLineF(QPointF(x, -y), QPointF(x, -y-yoffs)));
         painter->drawLine(renderline);
@@ -240,7 +241,10 @@ void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
             const QString str(QString::number(constrainInRange(i, 0, 360)));
             QRectF br = painter->boundingRect(QRectF(), Qt::AlignCenter, str);
             br.moveCenter(renderline.p2());
-            br.moveBottom(renderline.y2()-scale2);
+            if (dir > 0)
+                br.moveBottom(renderline.y2()-scale2);
+            else
+                br.moveTop(renderline.y2()+scale2);
             painter->drawText(br, str);
         }
     }
