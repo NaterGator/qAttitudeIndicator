@@ -31,6 +31,10 @@ public:
     void setPitch(qreal val){pitch = val;}
     qreal getRoll() {return roll;}
     qreal getPitch(){return pitch;}
+
+public slots:
+    void invalidateCache();
+
 protected:
     void paintEvent(QPaintEvent *event);
     void resizeEvent(QResizeEvent *event);
@@ -41,19 +45,24 @@ private:
     void initRollChar();
 
     // Painter helper
+    void repaintCache();
     void setupPainterForTextOverlay(QPainter *painter);
 
     // Rendering steps:
     void renderHorizonBackground(QPainter *painter);
     void renderPitchIndicators(QPainter *painter);
+    void renderHeadingIndicators(QPainter *painter);
     void renderOverlay(QPainter *painter);
-    qreal size;
+    qreal msize;
     qreal pensize;
     qreal roll;
     qreal pitch;
+    qreal yaw;
     qreal fov;
     QPainterPath target;
     QPainterPath rollPointer;
+    QPixmap cache;
+    bool    cache_valid;
 };
 
 #endif // ATTITUDEINDICATOR_H

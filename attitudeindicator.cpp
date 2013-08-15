@@ -33,15 +33,15 @@ int constrainInRange(int val, int min, int max)
 }
 
 AttitudeIndicator::AttitudeIndicator(QWidget *parent)
-    : QWidget(parent), fov(40)
+    : QWidget(parent), fov(40), cache_valid(false)
 {
     QTimer *timer = new QTimer(this);
-    connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+    connect(timer, SIGNAL(timeout()), this, SLOT(invalidateCache()));
     timer->start(1000);
-    size = sizeMin;
+    msize = sizeMin;
     setMinimumSize(sizeMin,sizeMin);
     setMaximumSize(sizeMax,sizeMax);
-    resize(size, size);
+    resize(msize, msize);
 
     initTargetChar();
     initRollChar();
@@ -53,6 +53,12 @@ AttitudeIndicator::AttitudeIndicator(QWidget *parent)
 AttitudeIndicator::~AttitudeIndicator()
 {
 
+}
+
+void AttitudeIndicator::invalidateCache()
+{
+    cache_valid = false;
+    update();
 }
 
 void AttitudeIndicator::initTargetChar()
@@ -76,14 +82,28 @@ void AttitudeIndicator::initRollChar()
 
 void AttitudeIndicator::resizeEvent(QResizeEvent *event)
 {
-    size = qMin(width(),height());
-    pensize = size;
+    invalidateCache();
 }
 
 void AttitudeIndicator::paintEvent(QPaintEvent *)
 {
-    QPainter painter(this);
-    QPoint center(0,0);
+    repaintCache();
+
+    QPainter blitter(this);
+    blitter.setRenderHints(QPainter::SmoothPixmapTransform | QPainter::Antialiasing);
+    blitter.drawPixmap(rect(), cache);
+}
+
+void AttitudeIndicator::repaintCache()
+{
+    if (cache_valid)
+        return;
+
+    msize = qMin(width(),height());
+    pensize = msize;
+    cache = QPixmap(size());
+    cache.fill(Qt::transparent);
+    QPainter painter(&cache);
     QPen whitePen(Qt::white);
     QPen blackPen(Qt::black);
 
@@ -94,17 +114,18 @@ void AttitudeIndicator::paintEvent(QPaintEvent *)
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
     painter.translate(painter.device()->width()  / 2.,
                       painter.device()->height() / 2.);
-    painter.scale(size, size);
+    painter.scale(msize, msize);
 
     renderHorizonBackground(&painter);
     renderPitchIndicators(&painter);
+    renderHeadingIndicators(&painter);
     renderOverlay(&painter);
 
 }
 
 void AttitudeIndicator::setupPainterForTextOverlay(QPainter *painter)
 {
-    painter->scale(1/size, 1/size);
+    painter->scale(1/msize, 1/msize);
     painter->translate(painter->device()->width()  / -2.0,
                        painter->device()->height() / -2.0);
     painter->setPen(QPen(Qt::white, 2));
@@ -165,6 +186,38 @@ void AttitudeIndicator::renderPitchIndicators(QPainter *painter)
             painter->drawText(br, str);
         }
     }
+    painter->restore();
+}
+
+void AttitudeIndicator::renderHeadingIndicators(QPainter *painter)
+{
+    QTransform mapper(painter->transform());
+    const qreal cpitch = qBound(-fov, pitch, fov);
+    const qreal y = 0.5*cpitch/fov;
+
+    painter->save();
+    painter->rotate(roll);
+    setupPainterForTextOverlay(painter);
+
+    painter->setPen(QPen(Qt::green, 2));
+    int horizonleft = static_cast<int>((yaw-fov*0.5)/5.0)*5;
+    int horizonright = static_cast<int>((yaw+fov*0.5)/5.0+1.0)*5;
+    for(int i = horizonleft; i <= horizonright; i += 5)
+    {
+        bool strong = (i % 10) == 0;
+        const qreal yoffs = strong ? 1/32.0 : 1/64.0;
+        const qreal x = (i-yaw)/fov;
+        const QLineF renderline = mapper.map(QLineF(QPointF(x, -y), QPointF(x, -y-yoffs)));
+        painter->drawLine(renderline);
+        if (strong) {
+            const QString str(QString::number(constrainInRange(i, 0, 360)));
+            QRectF br = painter->boundingRect(QRectF(), Qt::AlignCenter, str);
+            br.moveCenter(renderline.p2());
+            br.moveBottom(renderline.y2()-2);
+            painter->drawText(br, str);
+        }
+    }
+
     painter->restore();
 }
 
